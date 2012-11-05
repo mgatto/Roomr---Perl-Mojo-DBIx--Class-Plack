@@ -3,7 +3,10 @@ package Schema::Result::Room;
 
 use Modern::Perl;
 use Unicode::Normalize;
-use base qw/DBIx::Class::Core/;
+use base qw/DBIx::Class/;
+
+__PACKAGE__->load_components(qw/ PK::Auto InflateColumn::DateTime Core Ordered /);
+__PACKAGE__->position_column('name');
 
 __PACKAGE__->table('rooms');
 __PACKAGE__->add_columns(
@@ -11,10 +14,10 @@ __PACKAGE__->add_columns(
     id => {
         data_type => 'integer',
         is_auto_increment => 1,
-     },
+    },
     building_id => {
         data_type => 'integer',
-     },
+    },
     name => {
         data_type => 'char',
         is_nullable => 0,
@@ -48,6 +51,20 @@ __PACKAGE__->has_many(reservations => 'Schema::Result::Reservation', 'id');
 __PACKAGE__->belongs_to(building => 'Schema::Result::Building', 'building_id');
 
 
+sub TO_JSON {
+    my $self = shift;
+    # return
+    {
+        id       => $self->id,
+        building_id   => $self->building_id,
+        name  => $self->name,
+        description => $self->description,
+        picture =>$self->picture,
+        capacity => $self->capacity,
+        slug => $self->slug,
+    }
+};
+
 # @todo should a result class contain a slugifier?
 # @todo or, use this: https://metacpan.org/module/String::Dirify, with Text::Unidecode? for betond ASCII
 sub slugify($) {
@@ -62,7 +79,5 @@ sub slugify($) {
 
     return $input;
 }
-
-
 
 1;
