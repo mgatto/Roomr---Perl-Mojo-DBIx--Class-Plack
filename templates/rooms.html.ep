@@ -3,7 +3,7 @@
 <hr />
 
 <table>
-    % foreach my $room ($rooms) {
+    % foreach my $room (@$rooms) {
     <tr>
         <td><a href="/room/<%= $room->slug %>"><%= $room->name %></a></td>
         <td><img class="thumbnail" src="/public/images/<%= $room->picture %>" /></td>
