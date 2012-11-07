@@ -33,4 +33,15 @@ __PACKAGE__->add_columns(
 __PACKAGE__->set_primary_key('id');
 __PACKAGE__->has_many( rooms => 'Schema::Result::Room', 'id');
 
+# needed for Mojo rendering of complex relationships in JSON
+sub TO_JSON {
+    my $self = shift;
+    {
+        id          => $self->id,
+        name        => $self->name,
+        description => $self->description,
+        slug        => $self->slug,
+    }
+};
+
 1;

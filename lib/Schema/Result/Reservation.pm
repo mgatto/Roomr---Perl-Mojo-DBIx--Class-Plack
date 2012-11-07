@@ -18,24 +18,40 @@ __PACKAGE__->add_columns(
         data_type => 'integer',
         is_nullable => 0,
     },
-    reserved_for_id => {
+    person_id => {
         data_type => 'integer',
         is_nullable => 0,
     },
     start => {
-        data_type => 'timestamp',
+        data_type => 'datetime',
         is_nullable => 0,
         size => 19
     },
     end => {
-        data_type => 'timestamp',
+        data_type => 'datetime',
         is_nullable => 0,
         size => 19
     },
 );
 __PACKAGE__->set_primary_key('id');
+
 # Relations
 __PACKAGE__->belongs_to(room => 'Schema::Result::Room', 'room_id');
-__PACKAGE__->has_one(holder => 'Schema::Result::Person', 'reserved_for_id');
+__PACKAGE__->has_one(reserver => 'Schema::Result::Person', 'id');
+
+# needed for Mojo rendering of complex relationships in JSON
+sub TO_JSON {
+    my $self = shift;
+    {
+        id          => $self->id,
+        room_id     => $self->room->id,
+        room_name   => $self->room->name,
+        person_id   => $self->person_id,
+        person_name => $self->reserver->first_name . " " . $self->reserver->last_name,
+        start       => $self->start,
+        end         => $self->end,
+    }
+};
+
 
 1;

@@ -50,18 +50,17 @@ __PACKAGE__->set_primary_key('id');
 __PACKAGE__->has_many(reservations => 'Schema::Result::Reservation', 'id');
 __PACKAGE__->belongs_to(building => 'Schema::Result::Building', 'building_id');
 
-
+# needed for Mojo rendering of complex relationships in JSON
 sub TO_JSON {
     my $self = shift;
-    # return
     {
-        id       => $self->id,
-        building_id   => $self->building_id,
-        name  => $self->name,
+        id          => $self->id,
+        building_id => $self->building_id,
+        name        => $self->name,
         description => $self->description,
-        picture =>$self->picture,
-        capacity => $self->capacity,
-        slug => $self->slug,
+        picture     =>$self->picture,
+        capacity    => $self->capacity,
+        slug        => $self->slug,
     }
 };
 
