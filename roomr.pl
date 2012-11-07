@@ -3,7 +3,7 @@
 use Mojolicious::Lite;
 use Mojo::JSON;
 use DBIx::Class::ResultClass::HashRefInflator;
-# /srv/www/roomr.local/current/
+use HTML::FormHandler;
 use lib '/srv/www/roomr.local/v0.1/lib';
 use Schema;
 
@@ -19,7 +19,7 @@ get '/buildings' => sub {
     my $self = shift;
 
     my $rs = $self->db->resultset('Building');
-    #$rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
+    $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
     my @buildings = $rs->all();
 
     $self->respond_to(
@@ -38,7 +38,7 @@ get '/building/:slug/rooms' => sub {
     my $slug = $self->stash('slug');
 
     my $rs = $self->db->resultset('Room');
-    # $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
+    $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
     # all() is what actually executes the search; 'In list context, all() is
     # called implicitly on the resultset, thus returning a list of row objects
     # instead. To avoid that, use "search_rs".'
@@ -53,35 +53,91 @@ get '/building/:slug/rooms' => sub {
     );
 };
 
-# Room details
+# Room details and reservations
 get '/room/:slug' => sub {
     my $self = shift;
-    my $room_name  = $self->stash('name');
+    my $slug  = $self->stash('slug');
 
-    my $rs = $self->db->resultset('Reservations');
-    my @this_rooms_reservations = $rs->all();
+    my $rs = $self->db->resultset('Reservation');
+    $rs->result_class('DBIx::Class::ResultClass::HashRefInflator');
 
-    $self->render('reservations', reservations => @this_rooms_reservations);
+    my @this_rooms_reservations = $rs->search_rs({}, { join => 'room' })->all();
+    # search(  , { prefetch => ['room', 'reserver'] })
+    #{ 'room.slug' => $slug }
+
+    $self->respond_to(
+        json  => {json => [@this_rooms_reservations]},
+        html => {
+            template => 'reservations',
+            reservations => [@this_rooms_reservations],
+        }
+    );
 };
 
 # reserves a room for a block of time
-post '/room/:slug/reserve' => sub {
+get '/room/:slug/reservation/new' => sub {
     my $self = shift;
-    my $name  = $self->stash('name');
+    my $name  = $self->stash('slug');
+
+    # create an inline form and render
+    # must install module!
+    #my $form = HTML::FormHandler::Model::DBIC->new(
+    #    item_id         => $id,
+    #    item_class    => 'Reservation',
+    #    schema          => $schema,
+    #    field_list         => [
+    #            name    => 'Text',
+    #            active  => 'Boolean',
+    #            submit_btn => 'Submit',
+    #    ],
+    #);
+    my $form = HTML::FormHandler->new(
+        field_list => [
+            'room_id'      => { type => 'Hidden' },
+            'start'        => { type => 'DateTime' },
+            'start.month'  => { type => 'Month' },
+            'start.day'    => { type => 'MonthDay' },
+            'start.year'   => { type => 'Year' },
+            'start.hour'   => { type => 'Hour' },
+            'start.minute' => { type => 'Minute' },
+            'end'          => { type => 'DateTime'},
+            'end.month'    => { type => 'Month' },
+            'end.day'      => { type => 'MonthDay' },
+            'end.year'     => { type => 'Year' },
+            'end.hour'     => { type => 'Hour' },
+            'end.minute'   => { type => 'Minute' },
+            'submit_btn'   => { type => 'Submit' },
+        ],
+    );
+
+    $self->respond_to(
+        json  => {json => ["Error: Invalid Context"]},
+        html => {
+            template => 'new_reservation',
+            form => $form->render,
+        }
+    );
+};
+
+# Save a new reservation
+post '/room/:slug/reservation/save' => sub {
+    my $self = shift;
+    my $name  = $self->stash('slug');
 
 };
 
+
 # Edit a reservation
-post '/room/:slug/reservation/edit' => sub {
+get '/room/:slug/reservation/edit' => sub {
     my $self = shift;
-    my $room_name  = $self->stash('name');
+    my $room_name  = $self->stash('slug');
 
 };
 
 # Cancel a reservation
 post '/room/:slug/reservation/cancel' => sub {
     my $self = shift;
-    my $room_name  = $self->stash('name');
+    my $room_name  = $self->stash('slug');
 
 };
 

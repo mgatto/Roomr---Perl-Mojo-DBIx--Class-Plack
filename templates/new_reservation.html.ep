@@ -1,0 +1,3 @@
+<h1>Make a New Reservation</h1>
+
+<%== $form %>
