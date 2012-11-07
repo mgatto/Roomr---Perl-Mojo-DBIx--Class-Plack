@@ -1,0 +1,13 @@
+<h1>Reservations</h1>
+
+<hr />
+
+<table>
+    % foreach my $reservation (@$reservations) {
+    <tr>
+        <td>
+            <%= $reservation->reserver->first_name %> <%= $reservation->reserver->last_name %>: <%= $reservation->start %> &mdash; <%= $reservation->end %>
+        </td>
+    </tr>
+    % }
+</table>

@@ -5,8 +5,8 @@
 <table>
     % foreach my $building (@$buildings) {
     <tr>
-        <td><a href="/building/<%= $building->slug %>/rooms.html"><%= $building->name %></a></td>
-        <td><p><%= $building->description %></p></td>
+        <td><a href="/building/<%= $building->{'slug'} %>/rooms.html"><%= $building->{'name'} %></a></td>
+        <td><p><%= $building->{'description'} %></p></td>
 
         <!-- display rooms here instead of a whole route just for that -->
     </tr>
