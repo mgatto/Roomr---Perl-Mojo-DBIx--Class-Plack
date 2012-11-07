@@ -77,7 +77,7 @@ get '/room/:slug' => sub {
 # reserves a room for a block of time
 get '/room/:slug/reservation/new' => sub {
     my $self = shift;
-    my $name  = $self->stash('slug');
+    my $slug  = $self->stash('slug');
 
     # create an inline form and render
     # must install module!
@@ -93,7 +93,7 @@ get '/room/:slug/reservation/new' => sub {
     #);
     my $form = HTML::FormHandler->new(
         field_list => [
-            'room_id'      => { type => 'Hidden' },
+            'room_id'      => { type => 'Hidden', default => $slug },
             'start'        => { type => 'DateTime' },
             'start.month'  => { type => 'Month' },
             'start.day'    => { type => 'MonthDay' },
@@ -114,7 +114,8 @@ get '/room/:slug/reservation/new' => sub {
         json  => {json => ["Error: Invalid Context"]},
         html => {
             template => 'new_reservation',
-            form => $form->render,
+            slug     => $slug,
+            form     => $form->render,
         }
     );
 };
